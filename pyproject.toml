@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "weather-bot"
+version = "0.1.0"
+description = ""
+authors = ["h0diush <h0diush@yandex.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiogram = "^3.4.1"
+environs = "^10.3.0"
+sqlalchemy = "^2.0.27"
+alembic = "^1.13.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
