@@ -9,6 +9,7 @@ from keyboards import get_list_cities_keyboard
 from lexicon import LEXICON_RU
 from services import get_weather_for_current_city
 from state import FMSCity
+from utilits import response_to_command_info_city
 
 user_commands = Router()
 
@@ -44,7 +45,9 @@ async def process_add_city(message: Message, state: FSMContext):
 async def process_get_list_cities_current_user(message: Message):
     await message.answer(text=LEXICON_RU[message.text],
                          reply_markup=await get_list_cities_keyboard(
-                             message.from_user.id))
+                             message.from_user.id,
+                             callback='city',
+                             text=''))
 
 
 @user_commands.callback_query(F.data.startswith('city_'))
@@ -54,15 +57,27 @@ async def get_info_the_city(callback: CallbackQuery):
     info_the_city = await get_weather_for_current_city(city.city)
     if info_the_city:
         await callback.message.answer(
-            text=f"Вы выбрали город: {city.city} ({info_the_city['country']})\n"
-                 f"Температура составляет {info_the_city['temperature']} °C\n"
-                 f"Влажность составляет {info_the_city['humidity']} %\n"
-                 f"Погода, если описать двумя словами: "
-                 f"{info_the_city['description']}\n"
-                 f"Ветер до {info_the_city['wind_speed']} м/с, порывами "
-                 f"до {info_the_city['wind_gust']} м/с\n"
-                 f"Солнышко встанет в {info_the_city['sunrise']} "
-                 f"и зайдет в {info_the_city['sunset']}"
+            text=response_to_command_info_city(city=city,
+                                               info_the_city=info_the_city)
         )
     else:
         await callback.message.answer(LEXICON_RU["no_city_400"])
+
+
+@user_commands.message(Command(commands='changecities'))
+async def process_change_cities_command(message: Message):
+    await message.answer(
+        text=LEXICON_RU[message.text],
+        reply_markup=await get_list_cities_keyboard(
+            message.from_user.id,
+            text='❌ ',
+            callback='delete'
+        )
+    )
+
+
+@user_commands.callback_query(F.data.startswith('delete_'))
+async def delete_city(callback: CallbackQuery):
+    city_id = int(callback.data.split("_")[1])
+    await db_helper.delete_current_city(city_id=city_id)
+    await callback.message.answer(LEXICON_RU['delete_city'])

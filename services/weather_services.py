@@ -24,7 +24,7 @@ async def get_weather_for_current_city(city: Union[str] = None) -> dict:
                 "sunset": datetime.fromtimestamp(
                     response["sys"]["sunset"]).strftime("%H:%M"),
                 "wind_speed": response["wind"]["speed"],
-                "wind_gust": response["wind"]["gust"],
+                "wind_gust":  response["wind"].get("gust", None),
                 "country": response["sys"]["country"]
 
             }

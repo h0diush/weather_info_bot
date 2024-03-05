@@ -1,4 +1,4 @@
-from sqlalchemy import select, insert
+from sqlalchemy import select, insert, delete
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from config import settings
@@ -28,7 +28,7 @@ class DatabaseHelper:
                     insert(User).values(telegram_id=telegram_id,
                                         username=username)
                 )
-                await session.commit()
+                return await session.commit()
 
     async def check_city_in_user(self, user_id: int, city: str) -> City:
         async with self.session_factory() as session:
@@ -58,6 +58,13 @@ class DatabaseHelper:
                 select(City).filter_by(id=city_id)
             )
             return city
+
+    async def delete_current_city(self, city_id):
+        async with self.session_factory() as session:
+            await session.execute(
+                delete(City).where(City.id == city_id)
+            )
+            return await session.commit()
 
 
 db_helper = DatabaseHelper(
