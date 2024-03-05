@@ -30,7 +30,7 @@ class DatabaseHelper:
                 )
                 await session.commit()
 
-    async def get_current_city(self, user_id: int, city: str) -> City:
+    async def check_city_in_user(self, user_id: int, city: str) -> City:
         async with self.session_factory() as session:
             city = await session.scalar(
                 select(City).filter_by(user_id=user_id, city=city)
@@ -44,6 +44,20 @@ class DatabaseHelper:
                                     city=city)
             )
             return await session.commit()
+
+    async def get_cities_user(self, user_id: int):
+        async with self.session_factory() as session:
+            cities = await session.scalars(
+                select(City).filter_by(user_id=user_id)
+            )
+            return cities
+
+    async def get_city_by_id(self, city_id: int):
+        async with self.session_factory() as session:
+            city = await session.scalar(
+                select(City).filter_by(id=city_id)
+            )
+            return city
 
 
 db_helper = DatabaseHelper(

@@ -20,9 +20,9 @@ async def get_weather_for_current_city(city: Union[str] = None) -> dict:
                 "humidity": response["main"]["humidity"],
                 "description": response["weather"][0]["description"],
                 "sunrise": datetime.fromtimestamp(
-                    response["sys"]["sunrise"]).strftime("%H:%M:%S %d-%m-%Y"),
+                    response["sys"]["sunrise"]).strftime("%H:%M"),
                 "sunset": datetime.fromtimestamp(
-                    response["sys"]["sunset"]).strftime("%H:%M:%S %d-%m-%Y"),
+                    response["sys"]["sunset"]).strftime("%H:%M"),
                 "wind_speed": response["wind"]["speed"],
                 "wind_gust": response["wind"]["gust"],
                 "country": response["sys"]["country"]
