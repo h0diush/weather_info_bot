@@ -1,5 +1,6 @@
 from aiogram import Router, F
-from aiogram.filters import Command, StateFilter
+
+from aiogram.filters import Command, StateFilter, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message, CallbackQuery
@@ -9,7 +10,8 @@ from keyboards import get_list_cities_keyboard
 from lexicon import LEXICON_RU
 from services import get_weather_for_current_city
 from state import FMSCity
-from utilits import response_to_command_info_city
+from utilits import response_to_command_info_city_from_db, \
+    response_to_command_info_city_from_user
 
 user_commands = Router()
 
@@ -57,7 +59,7 @@ async def get_info_the_city(callback: CallbackQuery):
     info_the_city = await get_weather_for_current_city(city.city)
     if info_the_city:
         await callback.message.answer(
-            text=response_to_command_info_city(city=city,
+            text=response_to_command_info_city_from_db(city=city,
                                                info_the_city=info_the_city)
         )
     else:
@@ -81,3 +83,18 @@ async def delete_city(callback: CallbackQuery):
     city_id = int(callback.data.split("_")[1])
     await db_helper.delete_current_city(city_id=city_id)
     await callback.message.answer(LEXICON_RU['delete_city'])
+
+
+@user_commands.message(Command(commands='weather'))
+async def process_weather_command(message: Message, command: CommandObject):
+    city = command.args
+    if not city:
+        await message.answer(LEXICON_RU["no_input_city"])
+    else:
+        info = await get_weather_for_current_city(city)
+        if not info:
+            await message.answer(LEXICON_RU["no_city_400"])
+        else:
+            await message.answer(
+                text=response_to_command_info_city_from_user(city, info)
+            )
